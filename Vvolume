@@ -1,0 +1,60 @@
+#!/bin/zsh
+
+. Vglobals
+
+if [ "$#" -ne "1" ]; then 
+	echo "argument must be +, -, % or number (0 mutes and unmutes)";
+fi
+
+#works only with standard sink
+sinks_count=$(pactl list sinks | grep -c "^Sink #");
+if [ $sinks_count -ne "1" ]; then notify-send "can't handle more than one sink"; exit 2; fi
+
+#CONSTANTS (in %)
+path_to_toggle="$PATH_TO_DATA_FOLDER""/volume_toggle.data"
+max_volume=120;
+min_volume=0;
+step=3;
+
+new_volume=11;
+
+#get sinks pactl list sinks | awk '/Name:/ {print $2}'
+current_volume=$(pactl list sinks | awk -F' ' '/^\tVolume:/ {print $5}' | sed -e 's/%//');
+
+if [ "$1" = "0" ]; then
+	if [[ $current_volume -ne $min_volume ]]; then
+		echo $current_volume > $path_to_toggle;
+		new_volume=$min_volume;
+	else
+		new_volume=$(cat $path_to_toggle);
+		
+		# wrong volume written to file
+		if ((new_volume < min_volume || new_volume > max_volume)); then
+			echo "wrong volume in $path_to_toggle file";
+			new_volume=$((min_volume + 77));
+		fi
+	fi
+elif [ "$1" = "+" ]; then
+	new_volume=$((current_volume + step));
+	if ((new_volume > max_volume)); then new_volume=$max_volume; fi
+elif [ "$1" = "-" ]; then
+	new_volume=$((current_volume - step));
+	if ((new_volume < min_volume)); then new_volume=$min_volume; fi
+elif [ "$1" = "%" ]; then
+	printf "%.1f%%\n" $(((max_volume - min_volume)/100.*current_volume));
+	exit 0;
+elif [[ "$1" =~ "^[0-9]+$" ]]; then
+	if (( $1 > $min_volume && $1 < $max_volume )); then
+		new_volume="$1";
+	else
+		echo "volume must be between $min_volume and $max_volume";	
+	fi
+else 
+	echo "argument must be +, -, % or number (0 mutes and unmutes)";
+	exit 3;
+fi
+
+new_volume+="%";
+pactl set-sink-volume @DEFAULT_SINK@ $new_volume;
+
+exit 0;

@@ -1,0 +1,43 @@
+#!/bin/zsh
+
+. Vglobals
+
+if [ "$#" -ne 1 ]; then 
+	echo "no argument";
+	exit 1;
+fi
+
+# Constants
+path_to_brightness="/sys/class/backlight/intel_backlight";
+path_to_toggle="$PATH_TO_DATA_FOLDER""brightness_toggle.data"
+brightness_change=3;
+new_brightness=111;
+min_brightness=1;
+
+current_brightness=$(cat $path_to_brightness/brightness);
+max_brightness=$(cat $path_to_brightness/max_brightness);
+
+if [ $1 = "+" ]; then
+	new_brightness=$((current_brightness + brightness_change));	
+	if ((new_brightness > max_brightness)); then new_brightness=$((max_brightness - 10)); fi
+elif [ $1 = "-" ]; then
+	new_brightness=$((current_brightness - brightness_change));
+	if ((new_brightness < min_brightness)); then new_brightness=$min_brightness; fi
+elif [ $1 = "0" ]; then
+	if [[ $current_brightness -ne $min_brightness ]]; then
+		echo $current_brightness > $path_to_toggle;
+		new_brightness=$min_brightness;
+	else
+		new_brightness=$(cat $path_to_toggle);
+		
+		# wrong brightness written to file
+		if ((new_brightness < min_brightness || new_brightness > max_brightness)); then
+			echo "wrong brightness in $path_to_toggle file";
+			new_brightness=$((min_brightness + 77));
+		fi
+	fi
+else
+	echo "argument must be +, - or =";
+	exit 2;
+fi
+echo $new_brightness > $path_to_brightness/brightness;

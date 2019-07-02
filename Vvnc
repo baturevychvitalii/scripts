@@ -1,0 +1,33 @@
+#!/bin/zsh
+
+if [ $# -ne 1 ]; then
+	echo "option not provided";
+	exit 1;
+fi
+
+if [ "$1" = "stop" ]; then
+	x11vnc -R stop;
+	exit 0;
+fi
+
+# check if vnc is not already running
+if ps -e | grep -q x11vnc; then
+	echo "VNC is already running";
+	exit 1;
+fi
+
+echo "current IP:";
+devaddr="$(ip addr show dev $1)";
+if (( $? != 0 )); then
+	exit 1;
+fi
+
+echo "$devaddr" | sed -e 's/  */ /g' -e 's/^ //' | awk -F' ' '/^inet / {print $2}';
+
+
+echo "starting vnc server";
+
+x11vnc -display :0 -nevershared -forever -rfbauth $HOME/.x11vnc/passwd -o /var/log/x11vnc.log -bg;
+
+exit 0;
+

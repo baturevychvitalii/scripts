@@ -1,0 +1,33 @@
+iwlist $1 scan | sed \
+	-e '/Extra/d' \
+	-e '/Unknown/d' \
+	-e '/Mb\/s/d' \
+	-e 's/(.*)//' \
+	-e 's/ \+/ /g' \
+	-e 's/=/ /g' \
+	-e 's/[a-z]:/ /g' \
+	-e 's/:"/ /g' \
+	-e 's/"//g' | awk -F' ' '
+	BEGIN{
+		mac="      MAC     ";
+		chan="CHA";
+		freq=" FREQ ";
+		qual=" QUAL ";
+		enc="ENC";
+		ssid="   SSID    ";
+		shield="WPA2";
+	}
+	{
+		if($0~/Addres/){
+			printf "%30s %3s %6s %6s %3s %s %s\n", ssid, chan, freq, qual, enc, shield, mac;
+			shield="    ";
+			mac = $5; 
+		}
+		else if($0~/Channe/){chan = $NF;}
+		else if($0~/Frequenc/){freq = $2;}
+		else if($0~/Quality/){qual = $2;}
+		else if($0~/Encryption/){enc = $NF;}
+		else if($0~/SSID/){ssid = $2;}
+		if($0~/WPA2 /){shield="  + ";}
+	}
+	';

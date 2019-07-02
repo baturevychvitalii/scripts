@@ -1,0 +1,136 @@
+#!/bin/zsh
+regular_interface="wlp3s0";
+extreme_interface="NULL";
+target="/etc/netctl/olga_sh";
+
+function modify_interface_in_target
+{
+	echo "setting interface in target profile $target to $extreme_interface";
+	sed -i 's/\(^ *Interface=\).*$/\1'"$extreme_interface"'/' "$target";
+
+	if [ $? -ne 0 ]; then
+		echo "error while setting interface in target profile $target";
+		exit 1;
+	fi
+
+	echo "target successfully changed";
+}
+
+function pick_extreme
+{
+	actual_interfaces="$(ip link show | sed -n 's/^.*: \(wlp[a-z0-9]\+\):.*$/\1/p')";
+
+	if [ $(echo "$actual_interfaces" | wc -l) -lt 2 ]; then
+		echo "less than 2 network cards";
+		exit 1;
+	fi
+
+	for inter in $(echo "$actual_interfaces"); do
+		echo "found interface $inter";
+
+		# set interface to something but a regular one
+		if [ "$inter" != "$regular_interface" ]; then
+			extreme_interface="$inter";
+			break;
+		fi
+	done
+
+	if [ "$extreme_interface" = "NULL" ]; then
+		echo "for some reason all available interfaces are $regular_interface";
+		exit 1;
+	fi
+
+	echo "chosen extreme interface: $extreme_interface";
+}
+
+function interface_status()
+{
+	echo "status:";
+	ip link show "$1" | sed -n 's/.*\(<.*>\).*$/\1/p';	
+}
+
+function interface_mac()
+{
+	ip link show "$1" | grep ether | awk -F' ' '{ printf "current MAC:\n%s\n", $2 }'; 
+}
+
+function print_cards
+{
+	echo -e "\nregular interface: $regular_interface";
+	interface_status "$regular_interface";
+	interface_mac "$regular_interface";
+	
+	echo -e "\nextreme interface: $extreme_interface";
+	interface_status "$extreme_interface";
+	interface_mac "$extreme_interface";	
+}
+
+function stop_network_services()
+{
+	systemctl stop netctl-auto@"$1";
+}
+
+function start_network_services()
+{
+	systemctl start netctl-auto@"$1";
+}
+
+function revert_mac()
+{
+	ip link set dev "$1" address $(macchanger -s "$1" | awk -F' ' '/Permanent/ {print $3}');
+}
+
+function change_address()
+{
+	if [ $# -ne 2 ]; then
+		echo "invalid call to change_address, parameters must be: (interface_name, mode)";
+		exit 1;
+	fi
+
+	ip link set "$1" down;
+	if [ "$2" = "default" ]; then
+		revert_mac "$1";
+	else
+		ip link set dev "$1" address "$2";	
+	fi
+}
+
+# BEGIN
+xiaomi_mac="70:3a:51:3b:d0:85";
+acer_mac="74:df:bf:81:81:db";
+# Check arguments
+if [[ ( $# -ne 1 ) || ( "$1" != "home" && "$1" != "xiaomi" && "$1" != "acer" ) ]]; then
+	echo "must be one argument: home || xiaomi || acer";
+	exit 1;
+fi
+
+pick_extreme;
+
+
+if [ "$1" = "home" ]; then
+	echo "she came back";
+	stop_network_services "$extreme_interface";
+	change_address "$extreme_interface" "default";
+	start_network_services "$regular_interface";
+else
+	if [ "$1" = "xiaomi" ]; then
+		echo "switching to xiaomi";
+		mac="$xiaomi_mac";
+	elif [ "$1" = "acer" ]; then
+		echo "switching to acer";
+		mac="$acer_mac";
+	else
+		echo "unexpected situation";
+		exit 1;
+	fi
+
+	stop_network_services "$regular_interface";
+	change_address "$extreme_interface" "$mac";
+	modify_interface_in_target;
+	start_network_services "$extreme_interface";
+fi
+
+print_cards;
+
+exit 0;
+
