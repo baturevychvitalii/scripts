@@ -1,34 +1,20 @@
 #!/bin/zsh
 
-function pick_extreme()
-{
-	extreme="NULL";
-	actual_interfaces="$(ip link show | sed -n 's/^.*: \(wlp[a-z0-9]\+\):.*$/\1/p')";
-
-	if [ $(echo "$actual_interfaces" | wc -l) -lt 2 ]; then
-		echo "less than 2 network cards";
-		exit 1;
+interface="null";
+interfaces=($(ip link show | grep -e "^[1-9]\+" | cut -d ' ' -f 2 | tr ':' '\0'));
+for i in $interfaces; do
+	if [ "$1" = "$i" ]; then
+		interface="$1";
+		break;
 	fi
+done
 
-	for inter in $(echo "$actual_interfaces"); do
-		# set interface to something but a regular one
-		if [ "$inter" != "$1" ]; then
-			extreme="$inter";
-			break;
-		fi
-	done
+if [ "$interface" = "null" ]; then
+	echo "specified interface doesn't exist";
+	exit 1;
+fi
 
-	if [ "$extreme" = "NULL" ]; then
-		echo "for some reason all available interfaces are $regular_interface";
-		exit 1;
-	fi
-
-	echo "$extreme";
-}
-
-
-extreme="$(pick_extreme 'wlp3s0')";
-echo "Access point will be created on $extreme";
-sudo create_ap --mac f8:1a:67:af:1b:c3 --hidden "$extreme" "$extreme" gringo G350nslz831rV;
+echo "Access point will be created on $interface";
+sudo create_ap --mac f8:1a:67:af:1b:c3 --hidden "$interface" "$interface" gringo G350nslz831rV;
 
 exit 0;

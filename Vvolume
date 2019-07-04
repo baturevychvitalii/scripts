@@ -11,7 +11,7 @@ sinks_count=$(pactl list sinks | grep -c "^Sink #");
 if [ $sinks_count -ne "1" ]; then notify-send "can't handle more than one sink"; exit 2; fi
 
 #CONSTANTS (in %)
-path_to_toggle="$PATH_TO_DATA_FOLDER""/volume_toggle.data"
+path_to_toggle="$PATH_TO_DATA_FOLDER""/volume_toggle.data";
 max_volume=120;
 min_volume=0;
 step=3;

@@ -1,4 +1,8 @@
 #!/bin/zsh
+
+. Vglobals
+path_to_prev_monit="$PATH_TO_DATA_FOLDER""/xinerama.data";
+
 in_name="eDP";
 ex_name="null";
 disp="0";
@@ -32,6 +36,8 @@ function setup
 	# if no external monitor is available but user wants to turn it on
 	if [ "$ex_name" = "null" ]; then
 		layout="null";
+	else
+		echo "$ex_name" > "$path_to_prev_monit";
 	fi
 }  
 
@@ -79,9 +85,12 @@ function solve_problema
 {
 	case $layout in
 		"null")
+			ex_name="$(cat $path_to_prev_monit)";
+			echo "turning off $ex_name";
 			if [ "$ex_name" != "null" ]; then
 				xrandr -d :$disp --output $ex_name --off;
 				xrandr -d :$disp --output $in_name --auto;
+				echo "null" > $path_to_prev_monit;
 			fi
 			;;
 		"left")
