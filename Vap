@@ -1,20 +1,22 @@
 #!/bin/zsh
 
-interface="null";
-interfaces=($(ip link show | grep -e "^[1-9]\+" | cut -d ' ' -f 2 | tr ':' '\0'));
-for i in $interfaces; do
-	if [ "$1" = "$i" ]; then
-		interface="$1";
-		break;
-	fi
-done
+. Vglobals.sh
 
-if [ "$interface" = "null" ]; then
-	echo "specified interface doesn't exist";
+interfaces=($(ip link show | grep -e "^[1-9]\+" | cut -d ' ' -f 2 | tr ':' '\0'));
+
+if [[ "$1" = "-h" || "$1" = "--help" || "$1" = "help" ]]; then
+	echo "Usage: Vap [INTERFACE]";
+	echo "availble intervaces: $interfaces";
+	exit 0;
+fi
+
+if EXISTS_IN_ARRAY	"$1" $interfaces; then
+	echo "Access point will be created on $1";
+	sudo create_ap --mac f8:1a:67:af:1b:c3 --hidden "$1" "$1" gringo G350nslz831rV;
+	exit 0;
+else
+	echo "provided interface doesn't exist!";
+	echo "availabel interfaces are: $interfaces";
 	exit 1;
 fi
 
-echo "Access point will be created on $interface";
-sudo create_ap --mac f8:1a:67:af:1b:c3 --hidden "$interface" "$interface" gringo G350nslz831rV;
-
-exit 0;

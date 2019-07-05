@@ -1,2 +1,0 @@
-PATH_TO_DATA_FOLDER="/opt/scripts/data";
-AUR_GIT_FOLDER="$HOME/.AUR";

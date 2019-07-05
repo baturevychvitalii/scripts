@@ -1,12 +1,14 @@
 #!/bin/zsh
 
-. Vglobals
+. Vglobals.sh
 path_to_prev_monit="$PATH_TO_DATA_FOLDER""/xinerama.data";
 
 in_name="eDP";
 ex_name="null";
 disp="0";
-layout="right";
+layouts=("int" "left" "right" "ext");
+layout="${layouts[3]}";
+echo "$layout";
 
 function setup
 {
@@ -35,7 +37,7 @@ function setup
 
 	# if no external monitor is available but user wants to turn it on
 	if [ "$ex_name" = "null" ]; then
-		layout="null";
+		layout="${layouts[1]}";
 	else
 		echo "$ex_name" > "$path_to_prev_monit";
 	fi
@@ -43,37 +45,38 @@ function setup
 
 function process_input()
 {
-	i=1;
+	local i=1;
 	while (( i <= $# )); do
-		echo "processing ${@:$i:1}";
-		case "${@:$i:1}" in
+		echo "processing ${@[i]}";
+		case "${@[i]}" in
 			"-h")
 				echo -e "usage:\n"\
-			   	"-d [DISPLAY CODE]\n"\
-				"-l [LAYOUT:{left, rigth}]";
+			   	"-d [DISPLAY CODE default ':0']\n"\
+				"-l [LAYOUT:${layouts[@]}]";
 				exit 0;
 				;;
 			"-d")
 				((i++));
 				if ((i > $# )); then echo "this option requires value"; exit 1; fi
 
-				echo "setting display to ${@:$i:1}";
-				disp=${@:$i:1};
+				echo "setting display to ${@[i]}";
+				disp="${@[i]}";
 				;;
 			"-l")
 				((i++));
 				if ((i > $# )); then echo "this option requires value"; exit 1; fi
 
-				if [ "${@:$i:1}" = "left" ] || [ "${@:$i:1}" = "right" ] || [ "${@:$i:1}" = "null" ]; then
-					echo "setting extarnal display layout to '${@:$i:1}'";
-					layout="${@:$i:1}";
+				echo "provided layout is '${@[i]}'";
+				if EXISTS_IN_ARRAY "${@[i]}" $layouts; then
+					echo "setting extarnal display layout to '${@[i]}'";
+					layout="${@[i]}";
 				else
-					echo "unsupported layout ${@:$i:1}";
+					echo "unsupported layout ${@[i]}";
 					exit 1;
 				fi
 				;;
 			*)
-				echo "wrong argument ${@:$i:1}";
+				echo "wrong argument ${@[i]}";
 				exit 1;
 		esac
 
@@ -84,27 +87,31 @@ function process_input()
 function solve_problema
 {
 	case $layout in
-		"null")
+		"${layouts[1]}")
 			ex_name="$(cat $path_to_prev_monit)";
-			echo "turning off $ex_name";
 			if [ "$ex_name" != "null" ]; then
 				xrandr -d :$disp --output $ex_name --off;
 				xrandr -d :$disp --output $in_name --auto;
 				echo "null" > $path_to_prev_monit;
 			fi
 			;;
-		"left")
+		"${layouts[2]}")
 			xrandr -d :$disp --output $ex_name --pos 0x0 --auto;
 			xrandr -d :$disp --output $in_name --pos 1920x675 --auto;
 			;;
-		"right")
+		"${layouts[3]}")
 			xrandr -d :$disp --output $in_name --pos 0x675 --auto;   
 			xrandr -d :$disp --output $ex_name --pos 1366x0 --auto;
+			;;
+		"${layouts[4]}")
+			xrandr -d :$disp --output $in_name --off;
+			xrandr -d :$disp --output $ex_name --auto;
 			;;
 		*)
 			echo "some magic happened";
 	esac
 }
+
 
 process_input $@;
 setup;
