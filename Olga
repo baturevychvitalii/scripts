@@ -1,12 +1,11 @@
 #!/bin/zsh
-regular_interface="wlp3s0";
-extreme_interface="NULL";
-target="/etc/netctl/olga_sh";
+. Vglobals.sh
 
-function modify_interface_in_target
+function modify_interface_in_target()
 {
-	echo "setting interface in target profile $target to $extreme_interface";
-	sed -i 's/\(^ *Interface=\).*$/\1'"$extreme_interface"'/' "$target";
+	target="/etc/netctl/olga_sh";
+	echo "setting interface in target profile $target to $1";
+	sed -i 's/\(^ *Interface=\).*$/\1'"$1"'/' "$target";
 
 	if [ $? -ne 0 ]; then
 		echo "error while setting interface in target profile $target";
@@ -14,33 +13,6 @@ function modify_interface_in_target
 	fi
 
 	echo "target successfully changed";
-}
-
-function pick_extreme
-{
-	actual_interfaces="$(ip link show | sed -n 's/^.*: \(wlp[a-z0-9]\+\):.*$/\1/p')";
-
-	if [ $(echo "$actual_interfaces" | wc -l) -lt 2 ]; then
-		echo "less than 2 network cards";
-		exit 1;
-	fi
-
-	for inter in $(echo "$actual_interfaces"); do
-		echo "found interface $inter";
-
-		# set interface to something but a regular one
-		if [ "$inter" != "$regular_interface" ]; then
-			extreme_interface="$inter";
-			break;
-		fi
-	done
-
-	if [ "$extreme_interface" = "NULL" ]; then
-		echo "for some reason all available interfaces are $regular_interface";
-		exit 1;
-	fi
-
-	echo "chosen extreme interface: $extreme_interface";
 }
 
 function interface_status()
@@ -54,15 +26,16 @@ function interface_mac()
 	ip link show "$1" | grep ether | awk -F' ' '{ printf "current MAC:\n%s\n", $2 }'; 
 }
 
-function print_cards
+# arg1 name of external card interface
+function print_cards()
 {
-	echo -e "\nregular interface: $regular_interface";
-	interface_status "$regular_interface";
-	interface_mac "$regular_interface";
+	echo -e "\nregular interface: $BUILT_IN_INTERFACE";
+	interface_status "$BUILT_IN_INTERFACE";
+	interface_mac "$BUILT_IN_INTERFACE";
 	
-	echo -e "\nextreme interface: $extreme_interface";
-	interface_status "$extreme_interface";
-	interface_mac "$extreme_interface";	
+	echo -e "\nextreme interface: $1";
+	interface_status "$1";
+	interface_mac "$1";	
 }
 
 function stop_network_services()
@@ -96,22 +69,30 @@ function change_address()
 }
 
 # BEGIN
-xiaomi_mac="70:3a:51:3b:d0:85";
-acer_mac="74:df:bf:81:81:db";
 # Check arguments
 if [[ ( $# -ne 1 ) || ( "$1" != "home" && "$1" != "xiaomi" && "$1" != "acer" ) ]]; then
 	echo "must be one argument: home || xiaomi || acer";
 	exit 1;
 fi
 
-pick_extreme;
+xiaomi_mac="70:3a:51:3b:d0:85";
+acer_mac="74:df:bf:81:81:db";
+
+# find external interface
+extreme_interface="$(PICK_WIRELESS_INTERFACE ext)";
+if [ "$extreme_interface" = "NULL" ]; then
+	echo "external interface not found";
+	exit 1;
+fi
+
+echo "found external interface $extreme_interface";
 
 
 if [ "$1" = "home" ]; then
 	echo "she came back";
 	stop_network_services "$extreme_interface";
 	change_address "$extreme_interface" "default";
-	start_network_services "$regular_interface";
+	start_network_services "$BUILT_IN_INTERFACE";
 else
 	if [ "$1" = "xiaomi" ]; then
 		echo "switching to xiaomi";
@@ -124,13 +105,13 @@ else
 		exit 1;
 	fi
 
-	stop_network_services "$regular_interface";
+	stop_network_services "$BUILT_IN_INTERFACE";
 	change_address "$extreme_interface" "$mac";
-	modify_interface_in_target;
+	modify_interface_in_target "$extreme_interface";
 	start_network_services "$extreme_interface";
 fi
 
-print_cards;
+print_cards $extreme_interface;
 
 exit 0;
 

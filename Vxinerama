@@ -7,7 +7,7 @@ in_name="eDP";
 ex_name="null";
 disp="0";
 layouts=("int" "left" "right" "ext");
-layout="${layouts[3]}";
+layout="${layouts[2]}";
 echo "$layout";
 
 function setup

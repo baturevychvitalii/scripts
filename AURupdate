@@ -1,13 +1,13 @@
 #!/bin/zsh
 
-. Vglobals
+. Vglobals.sh
 
 echo "checking for updates in AUR...";
 
 cur_dir=$PWD;
 
 for pac in $(ls $AUR_GIT_FOLDER); do
-	echo $pac;
+	echo -e "\n$pac";
 	cd $AUR_GIT_FOLDER/$pac;
 	git pull;
 done

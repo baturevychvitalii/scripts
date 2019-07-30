@@ -1,8 +1,17 @@
 PATH_TO_DATA_FOLDER="/opt/scripts/data";
-AUR_GIT_FOLDER="$HOME/.AUR";
+AUR_GIT_FOLDER="/opt/AUR";
+BUILT_IN_INTERFACE="wlp3s0";
 
+# check if element exists in array
+# arg1 element
+# arg2,3,4...$# array
 function EXISTS_IN_ARRAY()
 {
+	if (($# < 2)); then
+		echo "EXISTS_IN_ARRAY: at least 2 args must be provided";
+		exit 1;
+	fi
+
 	# element 1 is our tested parameter
 	for idx in {2..$#}; do
 		if [ "${@[1]}" = "${@[idx]}" ]; then
@@ -12,3 +21,37 @@ function EXISTS_IN_ARRAY()
 
 	return 1;
 }
+
+# picks prefered interface
+# arg1 {int(internal), ext(external)} 
+# returns preffered interface if exists
+# ext -> int -> NULL
+function PICK_WIRELESS_INTERFACE()
+{
+	if [[ $1 != "int" && $1 != "ext" ]]; then
+		echo "PICK_WIRELESS_INTERFACE: invalid argument" >&2;
+		exit 1;
+	fi
+
+	interfaces=($(ip link show | grep -e "^[1-9]\+: wlp" | cut -d ' ' -f 2 | tr ':' '\0'));
+	
+	if [ $1 = "int" ]; then
+		if EXISTS_IN_ARRAY $BUILT_IN_INTERFACE $interfaces; then
+			echo "$BUILT_IN_INTERFACE";
+		else
+			echo "NULL";
+		fi
+	else
+		# find interface, which is not internal
+		choice="NULL";
+		for inter in $interfaces; do
+			if [ "$inter" != "$BUILT_IN_INTERFACE" ]; then
+				choice="$inter";
+				break;
+			fi
+		done
+
+		echo "$choice";
+	fi
+}
+
