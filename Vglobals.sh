@@ -1,4 +1,4 @@
-PATH_TO_DATA_FOLDER="/opt/scripts/data";
+PATH_TO_CACHE_FOLDER="/opt/scripts/cache";
 AUR_GIT_FOLDER="/opt/AUR";
 BUILT_IN_INTERFACE="wlp3s0";
 
@@ -53,5 +53,27 @@ function PICK_WIRELESS_INTERFACE()
 
 		echo "$choice";
 	fi
+}
+
+# ensures cache folder exists
+# arg1 file name in cache folder
+# returns full path to file with provided filename in PATH_TO_CACHE_FOLDER
+function REQUIRE_CACHE()
+{
+	if [ "$#" -ne 1 ]; then
+		echo "REQUIRE_CACHE: file name must be provided";
+		exit 1;
+	fi
+
+	if ! [ -d "$PATH_TO_CACHE_FOLDER" ]; then
+		mkdir "$PATH_TO_CACHE_FOLDER";
+
+		if ! [ -d "$PATH_TO_CACHE_FOLDER" ]; then
+			echo "REQUIRE_CACHE: couldn't create cache folder";
+			exit 1;
+		fi
+	fi
+
+	echo "$PATH_TO_CACHE_FOLDER/$1";
 }
 

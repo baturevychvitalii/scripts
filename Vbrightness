@@ -9,7 +9,7 @@ fi
 
 # Constants
 path_to_brightness="/sys/class/backlight/intel_backlight";
-path_to_toggle="$PATH_TO_DATA_FOLDER""/brightness_toggle.data"
+path_to_toggle="$(REQUIRE_CACHE vbrightness)";
 brightness_change=3;
 new_brightness=111;
 min_brightness=1;

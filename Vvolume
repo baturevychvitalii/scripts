@@ -10,7 +10,7 @@ fi
 working_sink="$(pactl list sinks | tr '\t' ' ' | sed 's/^ \+//' | grep -e '^Name: .*analog.*$' | cut -d ' ' -f 2 | head -n1)";
 
 #CONSTANTS (in %)
-path_to_toggle="$PATH_TO_DATA_FOLDER""/volume_toggle.data";
+path_to_toggle="$(REQUIRE_CACHE vvolume)";
 max_volume=120;
 min_volume=0;
 step=3;
