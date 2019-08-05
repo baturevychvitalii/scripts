@@ -1,3 +1,5 @@
+#!/bin/zsh
+
 iwlist $1 scan | sed \
 	-e '/Extra/d' \
 	-e '/Unknown/d' \

@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-. Vglobals.sh
+. Vlib.sh
 
 if [ "$#" -ne "1" ]; then 
 	echo "argument must be +, -, % or number (0 mutes and unmutes)";

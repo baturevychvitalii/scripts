@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-. Vglobals.sh
+. Vlib.sh
 path_to_prev_monit="$(REQUIRE_CACHE vxinerama)";
 
 in_name="eDP";

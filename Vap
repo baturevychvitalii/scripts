@@ -12,7 +12,7 @@ if [ "$1" = "clients" ]; then
 fi
 
 
-. Vglobals.sh
+. Vlib.sh
 hotspot_mac="f8:1a:67:af:1b:c3";
 optionz="--mac $hotspot_mac --hidden";
 cridentials="gringo G350nslz831rV";
