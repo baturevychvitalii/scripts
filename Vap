@@ -1,10 +1,16 @@
 #!/bin/zsh
 
 if [[ "$1" = "-h" || "$1" = "--help" || "$1" = "help" ]]; then
-	echo "Usage: Vap [-n(no internet)]]";
-	echo "availble intervaces: $interfaces";
+	echo "Usage:"
+	echo "\tVap [-n(no internet),clients]";
 	exit 0;
 fi
+
+if [ "$1" = "clients" ]; then
+	create_ap --list-clients $(create_ap --list-running | tail -n 1 | cut -d ' ' -f 1,1);
+	exit 0;
+fi
+
 
 . Vglobals.sh
 hotspot_mac="f8:1a:67:af:1b:c3";
@@ -17,6 +23,10 @@ if [ interface = "NULL" ]; then
 	exit 1;
 fi
 
+if ps -e | grep -q "create_ap"; then
+	echo "access point already exists";
+	exit 1;
+fi
 
 echo "Access point will be created on $interface";
 
