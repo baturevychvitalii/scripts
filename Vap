@@ -16,7 +16,7 @@ fi
 hotspot_mac="f8:1a:67:af:1b:c3";
 optionz="--mac $hotspot_mac --hidden";
 cridentials="gringo G350nslz831rV";
-interface="$(PICK_WIRELESS_INTERFACE ext)";
+interface="$(PICK_WIRELESS_INTERFACE $WIRELESS_PREFFERED_INTERFACE)";
 
 if [ interface = "NULL" ]; then
 	echo "requested interface isn't plugged in";
