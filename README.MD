@@ -38,7 +38,6 @@ Here is short description of them:
 			$ Vxinerama -l ext			# external monitor only
 			$ Vxinerama -l left			# both monitors, external is on the left
 
-
-
-	
+	A
+		Forwards arguments to interactive shell. I use it to call aliases from AwesomeWM's Run prompt (Win+R)
 

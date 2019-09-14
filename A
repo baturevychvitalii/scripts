@@ -1,0 +1,3 @@
+#!/bin/zsh
+# Use this script to run aliases from awesomewm run prompt (Super + R)
+zsh -c -i "$1";
