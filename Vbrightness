@@ -37,7 +37,7 @@ elif [ $1 = "0" ]; then
 		fi
 	fi
 else
-	echo "argument must be +, - or =";
+	echo "argument must be +, - or 0";
 	exit 2;
 fi
 echo $new_brightness > $path_to_brightness/brightness;

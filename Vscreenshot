@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+scrot -u ~/Pictures/screenshots/%Y-%m-%d-%H:%M:%S-scr.png;
+paplay /usr/share/sounds/freedesktop/stereo/screen-capture.oga;
+
