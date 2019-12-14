@@ -4,7 +4,9 @@ usefile="$HOME/Documents/oldschool/Database.kdbx";
 
 backupdir="/opt/scripts/backup/keepass";
 backup="$backupdir/Database_backup.kdbx";
-network="$backupdir/Database_net.kdbx";
+
+networkfile="Database_net.kdbx";
+networkdir="$HOME/Downloads";
 
 if ! [ -e $backupdir ] || ! [ -e $usefile ]; then
 	echo "backup directory or main use file don't exist";
@@ -20,17 +22,17 @@ echo "currently used file is backed up";
 
 # obtain file from network
 
-if ! [ -e $network ]; then
+if ! [ -e "$networkdir/$networkfile" ]; then
 	echo "network file doesn't exist";
 else
 	echo "merging network file to local backup...";
-	cp $network $network.old;
-	keepassxc-cli merge -s $backup $network;
+	cp "$networkdir/$networkfile" "$backupdir/$networkfile.old";
+	keepassxc-cli merge -s $backup "$networkdir/$networkfile";
 	# now backup file has all changes
-	cp $backup $network;
-
+	
+	cp $backup "$networkdir/$networkfile";
 	# send network file back to online storage
-	# rm $network
+	# rm "$networkdir/$networkfile"
 	
 	cp $backup $usefile;
 fi
