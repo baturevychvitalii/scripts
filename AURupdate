@@ -14,7 +14,7 @@ for pac in $(ls $AUR_GIT_FOLDER); do
 	if [ "$response" = "Already up to date." ]; then
 		echo "nothing to do";
 	else
-		git log -1;
+		git log --all -3;
  		makepkg -sic;
 		echo -e "\n\n";		
 	fi

@@ -7,7 +7,7 @@ if [ "$#" -ne "1" ]; then
 	exit 1;
 fi
 
-working_sink="$(pactl list sinks | tr '\t' ' ' | sed 's/^ \+//' | grep -e '^Name: .*analog.*$' | cut -d ' ' -f 2 | head -n1)";
+working_sink="$(pactl list sinks | tr '\t' ' ' | grep -A 1 RUNNING | tail -n 1 | cut -d ' ' -f 3)";
 
 #CONSTANTS (in %)
 path_to_toggle="$(REQUIRE_CACHE vvolume)";
