@@ -1,4 +1,4 @@
-. Vglobals.sh
+. Vglobals
 
 # check if element exists in array
 # arg1 element

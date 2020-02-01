@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-. Vglobals.sh
+. Vglobals
 
 echo "checking for updates in AUR...";
 

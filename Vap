@@ -1,13 +1,27 @@
 #!/bin/zsh
+function get_daemon_id()
+{
+	create_ap --list-running | tail -n1 | cut -d ' ' -f 1;
+}
 
 if [[ "$1" = "-h" || "$1" = "--help" || "$1" = "help" ]]; then
 	echo "Usage:"
-	echo "\tVap [-n(no internet),clients]";
+	echo "\tVap [-n(no internet),clients,stop]";
 	exit 0;
 fi
 
 if [ "$1" = "clients" ]; then
-	create_ap --list-clients $(create_ap --list-running | tail -n 1 | cut -d ' ' -f 1,1);
+	create_ap --list-clients $(get_daemon_id);
+	exit 0;
+fi
+
+if [ "$1" = "stop" ]; then
+	if ps -e | grep -q "create_ap"; then
+		sudo create_ap --stop $(get_daemon_id);
+	else
+		notify-send "there is no access point";
+		exit 1;
+	fi
 	exit 0;
 fi
 
@@ -24,7 +38,7 @@ if [ interface = "NULL" ]; then
 fi
 
 if ps -e | grep -q "create_ap"; then
-	echo "access point already exists";
+	notify-send "access point already exists";
 	exit 1;
 fi
 

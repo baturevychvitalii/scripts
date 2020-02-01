@@ -1,7 +1,12 @@
 #!/bin/zsh
 
 if [ "$#" -gt "0" ] && [ "$1" = "stop" ]; then
-	x11vnc -R stop;
+	if ps -e | grep -q x11vnc; then
+		x11vnc -R stop;
+	else
+		echo "there is no x11vnc instance running";
+		exit 1;
+	fi
 	exit 0;
 fi
 

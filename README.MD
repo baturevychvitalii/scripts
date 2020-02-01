@@ -1,6 +1,6 @@
 This repository contains set of scripts I use for interactions
 with my ArchLinux.
-Some scripts store cache, so go to Vglobals.sh, and set
+Some scripts store cache, so go to Vglobals, and set
 PATH_TO_CACHE_FOLDER
 
 Here is short description of them:
@@ -10,10 +10,10 @@ Here is short description of them:
 		packages, does $ git pull, and if there were any updates
 		does $ makepkg -sic;
 		( for correct work AUR_GIT_FOLDER variable must
-		be set in Vglobals.sh )
+		be set in Vglobals )
 
 	Vap
-		Creates access point
+		Creates access point, can list it's clients, and stop it
 	
 	Vbrightness
 		Changes brightness by writing some values to a specific
