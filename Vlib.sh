@@ -75,3 +75,10 @@ function REQUIRE_CACHE()
 	echo "$PATH_TO_CACHE_FOLDER/$1";
 }
 
+#prints arguments to both notify-send and echo
+function NOTIFY_FULL()
+{
+	echo "$@";
+	notify-send "$@";
+}
+
