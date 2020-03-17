@@ -31,7 +31,7 @@ function PICK_WIRELESS_INTERFACE()
 		exit 1;
 	fi
 
-	interfaces=($(ip link show | grep -e "^[1-9]\+: wlp" | cut -d ' ' -f 2 | tr ':' '\0'));
+	interfaces=($(ip link show | grep -e "^[1-9]\+: wlan" | cut -d ' ' -f 2 | tr ':' '\0'));
 	
 	if [ $1 = "int" ]; then
 		if EXISTS_IN_ARRAY $BUILT_IN_INTERFACE $interfaces; then
