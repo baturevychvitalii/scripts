@@ -25,6 +25,11 @@ function sync()
 		exit 1;
 	fi
 
+	if [ "$(du -s $1 | head -n1 | awk '{print $1}')" -gt 10000000 ]; then
+		echo "local folder is too large, you have probably made a mistake, and i have probably saved you))";
+		exit 6;
+	fi
+
 	echo "device is connected and both folders are real";
 	echo "synchronizing...";
 
@@ -32,16 +37,8 @@ function sync()
 	cd "$1";
 	find . -type f | cut -d'/' -f2- | sort > /tmp/status_local;
 	aft-mtp-cli "ls-r $2" | sed -e 's/[0-9]\+ *//' | grep "\." | sort > /tmp/status_android;
-	echo "local:";
-	cat /tmp/status_local;
-	echo "andr:";
-	cat /tmp/status_android;
 
 	comm -3 --output-delimiter="~" /tmp/status_local /tmp/status_android > /tmp/status_common;
-
-	echo "common:";
-	cat /tmp/status_common;
-	echo "\n\n";
 
 	local folder;
 	# lines beginning with ~ are only on android
