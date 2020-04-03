@@ -55,19 +55,30 @@ function PICK_WIRELESS_INTERFACE()
 
 # ensures cache folder exists
 # arg1 file name in cache folder
+# arg2 default value if file doesn't exist
 # returns full path to file with provided filename in PATH_TO_CACHE_FOLDER
 function REQUIRE_CACHE()
 {
-	if [ "$#" -ne 1 ]; then
-		echo "REQUIRE_CACHE: file name must be provided";
+	if [ "$#" -ne 2 ]; then
+		echo "REQUIRE_CACHE: file name and default value must be provided";
 		exit 1;
 	fi
 
 	if ! [ -d "$PATH_TO_CACHE_FOLDER" ]; then
-		mkdir "$PATH_TO_CACHE_FOLDER";
+		mkdir -p "$PATH_TO_CACHE_FOLDER";
 
 		if ! [ -d "$PATH_TO_CACHE_FOLDER" ]; then
 			echo "REQUIRE_CACHE: couldn't create cache folder";
+			exit 1;
+		fi
+	fi
+
+	local file="$PATH_TO_CACHE_FOLDER/$1";
+
+	if ! [ -f "$file" ]; then
+		echo "$2" > "$file";
+		if ! [ -f "$file" ]; then
+			echo "REQUIRE_CACHE: couldn't create cache file";
 			exit 1;
 		fi
 	fi

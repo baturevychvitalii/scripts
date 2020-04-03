@@ -1,0 +1,81 @@
+#!/bin/zsh
+
+function foldername()
+{
+	echo "$1" | awk -F'/' 'BEGIN{OFS=FS}{$NF=""; print $0}';
+}
+
+#arg1 local directory
+#arg2 android directory
+function sync()
+{
+	if [ $# -ne 2 ]; then
+		echo "2 arguements must be provided for sync";
+		exit 3;
+	fi
+
+	if ! aft-mtp-cli "ls $2" > /dev/null; then
+		exit 2;
+	fi
+
+	if [ -d "$1" ] && [ -O "$1" ] && [ -w "$1" ]; then
+		echo "local directory exists with sufficient permissions";
+	else
+		echo "either local directory doesn't exist, or permissions aren't sufficient";
+		exit 1;
+	fi
+
+	echo "device is connected and both folders are real";
+	echo "synchronizing...";
+
+	curr_dir="$pwd";
+	cd "$1";
+	find . -type f | cut -d'/' -f2- | sort > /tmp/status_local;
+	aft-mtp-cli "ls-r $2" | sed -e 's/[0-9]\+ *//' | grep "\." | sort > /tmp/status_android;
+	echo "local:";
+	cat /tmp/status_local;
+	echo "andr:";
+	cat /tmp/status_android;
+
+	comm -3 --output-delimiter="~" /tmp/status_local /tmp/status_android > /tmp/status_common;
+
+	echo "common:";
+	cat /tmp/status_common;
+	echo "\n\n";
+
+	local folder;
+	# lines beginning with ~ are only on android
+	echo "only on android:";
+	for file in $(cat /tmp/status_common | grep "^~" | sed 's/^~//'); do
+		folder="$(foldername $file)";
+		echo "$file~~~$folder~~~";
+		if [ -n "$folder" ] && [ ! -d "$folder" ]; then
+			echo "creating local directory $folder";
+			mkdir -p "$folder";
+		fi	
+
+		aft-mtp-cli "get $2/$file $file";
+	done
+	
+	# lines not beginning with ~ are only on this pc
+	echo "only on $HOST:";
+	for file in $(cat /tmp/status_common | grep -v "^~"); do
+		folder="$(foldername $file)";
+		echo "$file~~~$folder~~~";
+		if [ -n $folder ]; then
+			aft-mtp-cli "mkpath $2/$folder";
+		fi
+
+		aft-mtp-cli "put $file $2/$folder";
+	done
+
+
+
+	rm /tmp/status_local;
+	rm /tmp/status_android;
+	rm /tmp/status_common;
+	cd "$curr_dir";
+}
+
+
+sync "$1" "$2";

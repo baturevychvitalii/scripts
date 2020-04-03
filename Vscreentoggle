@@ -1,7 +1,7 @@
 #!/bin/zsh
 . Vlib.sh
 
-cache="$(REQUIRE_CACHE vscreentoggle)";
+cache="$(REQUIRE_CACHE vscreentoggle 1)";
 turned=$(cat $cache);
 if [ $turned = "1" ]; then
 	xrandr --output DP-1 --off;

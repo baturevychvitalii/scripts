@@ -1,6 +1,5 @@
 #!/bin/zsh
 
-. Vlib.sh
 . Vglobals
 
 if [ "$#" -ne "1" ]; then 
@@ -8,43 +7,23 @@ if [ "$#" -ne "1" ]; then
 	exit 1;
 fi
 
-working_sink="$(pactl list sinks | tr '\t' ' ' | grep -A 1 RUNNING | tail -n 1 | cut -d ' ' -f 3)";
-
-#CONSTANTS (in %)
-path_to_toggle="$(REQUIRE_CACHE vvolume)";
-max_volume=120;
-min_volume=0;
-
-new_volume=11;
-
-#get sinks pactl list sinks | awk '/Name:/ {print $2}'
-current_volume=$(pactl list sinks | grep -A 15 "$working_sink" | awk -F' ' '/^\tVolume:/ {print $5}' | sed -e 's/%//');
+working_sink="$(pactl list sinks short | awk '/bluez/{print $2}')";
+if ! pactl list sinks short | grep -q "bluez"; then
+	working_sink="$(pactl list sinks short | head -n1 | awk '{print $2}')";
+fi
 
 if [ "$1" = "0" ]; then
-	if [[ $current_volume -ne $min_volume ]]; then
-		echo $current_volume > $path_to_toggle;
-		new_volume=$min_volume;
-	else
-		new_volume=$(cat $path_to_toggle);
-		
-		# wrong volume written to file
-		if ((new_volume < min_volume || new_volume > max_volume)); then
-			echo "wrong volume in $path_to_toggle file";
-			new_volume=$((min_volume + 77));
-		fi
-	fi
+	pactl set-sink-mute $working_sink toggle;
 elif [ "$1" = "+" ]; then
-	new_volume=$((current_volume + VOLUME_DERIVATIVE_SLOPE));
-	if ((new_volume > max_volume)); then new_volume=$max_volume; fi
+	pactl set-sink-volume $working_sink +$VOLUME_DERIVATIVE_SLOPE%;
 elif [ "$1" = "-" ]; then
-	new_volume=$((current_volume - VOLUME_DERIVATIVE_SLOPE));
-	if ((new_volume < min_volume)); then new_volume=$min_volume; fi
+	pactl set-sink-volume $working_sink -$VOLUME_DERIVATIVE_SLOPE%;
 elif [ "$1" = "%" ]; then
-	printf "%.1f%%\n" $(((max_volume - min_volume)/100.*current_volume));
-	exit 0;
+	echo "\tworking sink: $working_sink";
+	pactl list sinks | grep -A10 $working_sink | grep -i -e "Volume: " -e "Mute: ";
 elif [[ "$1" =~ "^[0-9]+$" ]]; then
-	if (( $1 > $min_volume && $1 < $max_volume )); then
-		new_volume="$1";
+	if (( $1 > 0 && $1 < 100)); then
+		pactl set-sink-volume $working_sink $1%;
 	else
 		echo "volume must be between $min_volume and $max_volume";	
 	fi
@@ -52,9 +31,6 @@ else
 	echo "argument must be +, -, % or number (0 mutes and unmutes)";
 	exit 3;
 fi
-
-new_volume+="%";
-pactl set-sink-volume "$working_sink" "$new_volume";
 
 exit 0;
 
