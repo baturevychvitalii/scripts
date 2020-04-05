@@ -2,33 +2,33 @@
 
 . Vglobals
 
+function curr_volume()
+{
+	pactl list sinks | sed -n "/$1\$/,/Volume:/s/^.*Volume: .* \([1-9][0-9]*\)%.*$/\1/p";
+}
+
 if [ "$#" -ne "1" ]; then 
 	echo "argument must be +, -, % or number (0 mutes and unmutes)";
 	exit 1;
 fi
 
-working_sink="$(pactl list sinks short | awk '/bluez/{print $2}')";
-if ! pactl list sinks short | grep -q "bluez"; then
-	working_sink="$(pactl list sinks short | head -n1 | awk '{print $2}')";
-fi
+default_sink="$(pactl info | sed -n 's/^Default Sink: \(.*$\)/\1/p')";
 
 if [ "$1" = "0" ]; then
-	pactl set-sink-mute $working_sink toggle;
-elif [ "$1" = "+" ]; then
-	pactl set-sink-volume $working_sink +$VOLUME_DERIVATIVE_SLOPE%;
+	pactl set-sink-mute $default_sink toggle;
+elif [ "$1" = "+" ] && [ "$(curr_volume $default_sink)" -lt $VOLUME_MAX ]; then
+	pactl set-sink-volume $default_sink +$VOLUME_DERIVATIVE_SLOPE%;
 elif [ "$1" = "-" ]; then
-	pactl set-sink-volume $working_sink -$VOLUME_DERIVATIVE_SLOPE%;
+	pactl set-sink-volume $default_sink -$VOLUME_DERIVATIVE_SLOPE%;
 elif [ "$1" = "%" ]; then
-	echo "\tworking sink: $working_sink";
-	pactl list sinks | grep -A10 $working_sink | grep -i -e "Volume: " -e "Mute: ";
-elif [[ "$1" =~ "^[0-9]+$" ]]; then
-	if (( $1 > 0 && $1 < 100)); then
-		pactl set-sink-volume $working_sink $1%;
-	else
-		echo "volume must be between $min_volume and $max_volume";	
-	fi
+	echo "\tDdefault sink: $default_sink";
+	pactl list sinks | sed -n "/$default_sink\$/,/Mute/p" | tail -n1;
+	echo "\tVolume: $(curr_volume $default_sink)%";
+elif [[ "$1" =~ "^[0-9]+$" ]] && [ $1 -ge 0 ] && [ $1 -le $VOLUME_MAX ]; then
+	pactl set-sink-volume $default_sink $1%;
 else 
 	echo "argument must be +, -, % or number (0 mutes and unmutes)";
+	echo "or required volume > VOLUME_MAX, which can be set in Vglobals file";
 	exit 3;
 fi
 

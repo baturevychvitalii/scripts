@@ -5,6 +5,7 @@ PATH_TO_CACHE_FOLDER="/opt/scripts/cache";
 SCREENSHOTS_DEFAULT_MODE="focused";
 SCREENSHOTS_FOLDER="$HOME/Pictures/screenshots";
 VOLUME_DERIVATIVE_SLOPE=4;
+VOLUME_MAX=111;
 
 #[left|right|ext|int]
 VXINERAMA_DEFAULT_LAYOUT="ext";
