@@ -16,14 +16,16 @@ default_sink="$(pactl info | sed -n 's/^Default Sink: \(.*$\)/\1/p')";
 
 if [ "$1" = "0" ]; then
 	pactl set-sink-mute $default_sink toggle;
-elif [ "$1" = "+" ] && [ "$(curr_volume $default_sink)" -lt $VOLUME_MAX ]; then
+elif [ "$1" = "+" ] && [ $(($(curr_volume $default_sink) + VOLUME_DERIVATIVE_SLOPE)) -le $VOLUME_MAX ]; then
 	pactl set-sink-volume $default_sink +$VOLUME_DERIVATIVE_SLOPE%;
 elif [ "$1" = "-" ]; then
 	pactl set-sink-volume $default_sink -$VOLUME_DERIVATIVE_SLOPE%;
 elif [ "$1" = "%" ]; then
 	echo "\tDdefault sink: $default_sink";
 	pactl list sinks | sed -n "/$default_sink\$/,/Mute/p" | tail -n1;
-	echo "\tVolume: $(curr_volume $default_sink)%";
+	current_percent=$(curr_volume $default_sink);
+	current_percent=$((current_percent * 100 / VOLUME_MAX));
+	echo "\tVolume: $current_percent%";
 elif [[ "$1" =~ "^[0-9]+$" ]] && [ $1 -ge 0 ] && [ $1 -le $VOLUME_MAX ]; then
 	pactl set-sink-volume $default_sink $1%;
 else 

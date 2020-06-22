@@ -36,8 +36,11 @@ elif [ $1 = "0" ]; then
 			new_brightness=$((min_brightness + 77));
 		fi
 	fi
+elif [ $1 = "%" ]; then
+	echo $((current_brightness * 100 / max_brightness + 1));
+	exit 0;
 else
-	echo "argument must be +, - or 0";
+	echo "argument must be +, -, % or 0";
 	exit 2;
 fi
 echo $new_brightness > $path_to_brightness/brightness;

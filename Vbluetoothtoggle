@@ -1,11 +1,5 @@
 #!/bin/zsh
 
-
-function service_status()
-{
-	systemctl status bluetooth | grep Active | sed 's/^ \+//' | cut -d ' ' -f 2
-}
-
 function power_status()
 {
 	bluetoothctl show | grep Powered | tr '\t' ' ' | sed 's/^ \+//' | cut -d ' ' -f 2
@@ -13,20 +7,13 @@ function power_status()
 
 . Vlib.sh
 
-if [ $(service_status) = "inactive" ]; then
-	sudo systemctl restart bluetooth.service;
-	NOTIFY_FULL "bluetooth service: $(service_status)";
-	bluetoothctl power on;
-	NOTIFY_FULL "bluetooth power: $(power_status)";
+if [ $(power_status) = "yes" ]; then
+	bluetoothctl power off;
 else
-	if [ $(power_status) = "yes" ]; then
-		bluetoothctl power off;
-		NOTIFY_FULL "bluetooth power: $(power_status)";
-	fi
-
-	sudo systemctl stop bluetooth.service;
-	NOTIFY_FULL "bluetooth service: $(service_status)";
+	bluetoothctl power on;
 fi
+
+NOTIFY_FULL "bluetooth power: $(power_status)";
 	
 
 	

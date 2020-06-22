@@ -4,7 +4,6 @@
 . Vglobals
 path_to_prev_monit="$(REQUIRE_CACHE vxinerama null)";
 
-in_name="eDP";
 ex_name="null";
 disp="0";
 layouts=("int" "left" "right" "ext");
@@ -19,12 +18,12 @@ function setup
 
 	disps=$(xrandr -d :$disp | grep "connected" | cut -d ' ' -f 1-2);
 	# get name of internal monitor
-	in_name=$(echo $disps | grep $in_name | cut -d ' ' -f 1);
-	echo "internal monitor is $in_name";
-	xrandr -d :$disp --output $in_name --primary;
+	INTERNAL_DISPLAY_NAME=$(echo $disps | grep $INTERNAL_DISPLAY_NAME | cut -d ' ' -f 1);
+	echo "internal monitor is $INTERNAL_DISPLAY_NAME";
+	xrandr -d :$disp --output $INTERNAL_DISPLAY_NAME --primary;
 
 	#remove internal monitor from external monitor options
-	disps=$(echo $disps | grep -v "$in_name");
+	disps=$(echo $disps | grep -v "$INTERNAL_DISPLAY_NAME");
 
 	echo $disps |
 	while read -r key_val; do
@@ -92,20 +91,20 @@ function solve_problema
 			ex_name="$(cat $path_to_prev_monit)";
 			if [ "$ex_name" != "null" ]; then
 				xrandr -d :$disp --output $ex_name --off;
-				xrandr -d :$disp --output $in_name --auto;
+				xrandr -d :$disp --output $INTERNAL_DISPLAY_NAME --auto;
 				echo "null" > $path_to_prev_monit;
 			fi
 			;;
 		"${layouts[2]}")
 			xrandr -d :$disp --output $ex_name --pos 0x0 --auto;
-			xrandr -d :$disp --output $in_name --pos 1920x675 --auto;
+			xrandr -d :$disp --output $INTERNAL_DISPLAY_NAME --pos 1920x675 --auto;
 			;;
 		"${layouts[3]}")
-			xrandr -d :$disp --output $in_name --pos 0x675 --auto;   
-			xrandr -d :$disp --output $ex_name --pos 1366x0 --auto;
+			xrandr -d :$disp --output $INTERNAL_DISPLAY_NAME --pos 0x675 --auto;   
+			xrandr -d :$disp --output $ex_name --pos 1920x0 --auto;
 			;;
 		"${layouts[4]}")
-			xrandr -d :$disp --output $in_name --off;
+			xrandr -d :$disp --output $INTERNAL_DISPLAY_NAME --off;
 			xrandr -d :$disp --output $ex_name --auto;
 			;;
 		*)
