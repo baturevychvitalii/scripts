@@ -24,7 +24,7 @@ Here is short description of them:
 		not work on yours.
 
 	Vvnc
-		Startx x11vnc server, use it alot with ssh while sitting
+		Start x11vnc server, use it alot with ssh while sitting
 		on my bed
 
 	Vvolume

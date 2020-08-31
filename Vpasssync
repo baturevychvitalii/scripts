@@ -1,0 +1,102 @@
+#!/bin/zsh
+
+function Mergedb()
+{
+	local res;
+	if [ "$1" = "new" ]; then
+		echo "changing password";
+		keepassxc-cli merge "$2" "$3";
+		res=$?;
+	elif [ "$1" = "same" ]; then
+		echo "same password";
+		keepassxc-cli merge -s "$2" "$3";
+		res=$?;
+	else
+		res=1;
+	fi
+	return $res;
+}
+
+. Vglobals
+
+backupdir="$PATH_TO_CACHE_FOLDER/keepass";
+backup="$backupdir/Database_backup.kdbx";
+
+networkfile="Database_net.kdbx";
+networkdir="$HOME/Downloads";
+
+clouddir="pcloud:backup";
+
+if ! [ -e "$KEEPASS_DATABASE_FILE" ]; then
+	echo "database $KEEPASS_DATABASE_FILE doesn't exist";
+	exit 1;
+fi
+
+if ! [ -d "$backupdir" ]; then
+	mkdir -p "$backupdir";
+
+	if ! [ -d "$backupdir" ]; then
+		echo "couldn't create backup directory";
+		exit 1;
+	fi
+fi
+
+flags="same"
+if [ "$#" -gt 0 ] && [ "$1" = "newpass" ]; then
+	echo "password in local database was changed";
+	flags="new";
+fi
+	
+
+# keep old backup backed up
+cp "$backup" "$backup.old";
+echo "backup backed up)";
+cp "$KEEPASS_DATABASE_FILE" "$backup";
+echo "currently used file is backed up";
+
+
+# obtain file from network
+rclone copy "$clouddir/$networkfile" "$networkdir" && echo "loaded copy from cloud";
+
+if ! [ -e "$networkdir/$networkfile" ]; then
+	echo "network file wasn't downloaded";
+else
+	echo "merging network file to local backup...";
+	cp "$networkdir/$networkfile" "$backupdir/$networkfile.old";
+	if ! Mergedb "$flags" "$backup" "$networkdir/$networkfile"; then
+		echo "maybe the password you've provided is wrong, try again:";
+
+		if ! Mergedb "$flags" "$backup" "$networkdir/$networkfile"; then
+			echo "or maybe you don't know the password((";
+			rm "$networkdir/$networkfile";
+			exit 1
+		fi
+	fi
+	# now backup file has all changes
+
+	cp "$backup" "$KEEPASS_DATABASE_FILE";
+	
+	cp "$backup" "$networkdir/$networkfile";
+	# send network file back to online storage
+	rclone copyto "$networkdir/$networkfile" "$clouddir/$networkfile.new";
+
+	if rclone ls "$clouddir" | grep -q "$networkfile.new"; then
+		echo "backup successfully copied to cloud";
+		rclone moveto "$clouddir/$networkfile.new" "$clouddir/$networkfile";
+
+		if rclone ls "$clouddir" | grep -q "$networkfile.new"; then
+			echo "couldn't replace old file with a new one on remote";
+			exit 1;
+		else
+			echo "file is replaced on remote";
+			rm "$networkdir/$networkfile";
+			echo "local redundant copy deleted";
+		fi
+	else
+		echo "backup wasn't copied to cloud";
+		exit 1;
+	fi
+fi
+
+echo "done";
+
