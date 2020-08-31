@@ -1,27 +1,30 @@
 #!/bin/zsh
 
 . Vglobals
+
 if [ "$#" -gt 0 ]; then
 	mode="$1";
 else
 	mode="$SCREENSHOTS_DEFAULT_MODE";
 fi
 
+filename="$SCREENSHOTS_FOLDER/$(date +'%Y.%m.%d_%H:%M:%S').png";
+
 case "$mode" in
 	"focused")
-		mode="-u";
+		scrot -u "$filename";
 		;;
 	"full")
-		mode="";
+		scrot "$filename";
 		;;
 	"select")
-		mode="-s";
+		scrot -s -f "$filename";
 		;;
 	*)
 		echo "wrong argument";
 		exit 1;
 esac
 
-scrot $mode "$SCREENSHOTS_FOLDER/%Y-%m-%d-%H:%M:%S-scr.png";
+xclip -selection c -t image/png < "$filename";
 paplay /usr/share/sounds/freedesktop/stereo/screen-capture.oga;
 

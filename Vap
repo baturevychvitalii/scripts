@@ -18,6 +18,11 @@ fi
 if [ "$1" = "stop" ]; then
 	if ps -e | grep -q "create_ap"; then
 		create_ap --stop $(get_daemon_id);
+		for int in $(ip link | grep -oe "ap[0-9]"); do
+			echo "deleting virtual interface";
+			iw dev $int del;
+		done
+		rm /tmp/create_ap.*;
 	else
 		notify-send "there is no access point";
 		exit 1;
@@ -46,14 +51,17 @@ fi
 
 echo "Access point will be created on $interface";
 
+if [ -e /tmp/create_ap.all.lock ]; then
+	echo "deleting the lock";
+	rm /tmp/create_ap.all.lock;
+fi
+
+systemctl stop netctl-auto@wlan0
 if [ "$1" = "-n" ]; then
 	zsh -c "create_ap -n $optionz $interface $cridentials"
 else
-	if ! EXISTS_IN_ARRAY "$1" $(ls /sys/class/net); then
-		echo "$1 is neither an interface nor an option";
-		exit 1;
-	fi
-	zsh -c "create_ap $optionz $interface $1 $cridentials"
+	zsh -c "create_ap $optionz $interface $interface $cridentials"
 fi
+systemctl start netctl-auto@wlan0
 exit 0;
 

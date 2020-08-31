@@ -11,8 +11,5 @@ SCREENSHOTS_FOLDER="$HOME/Pictures/screenshots";
 VOLUME_DERIVATIVE_SLOPE=4;
 VOLUME_MAX=116;
 
-#[left|right|ext|int]
-VXINERAMA_DEFAULT_LAYOUT="int";
-
 #[ext|int]
 WIRELESS_PREFFERED_INTERFACE="int";

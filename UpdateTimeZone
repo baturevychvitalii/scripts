@@ -4,3 +4,4 @@ new_timezone="$(curl https://ipapi.co/timezone)";
 echo "$new_timezone";
 timedatectl set-timezone "$new_timezone";
 timedatectl
+
