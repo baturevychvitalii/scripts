@@ -1,8 +1,13 @@
+# Descriptione! Descriptione!
 This repository contains set of scripts I use for interactions
 with my ArchLinux.
 
-### Usage
-run $ install.sh
+## Installation
+clone this to directory of your choice, add this directory to $PATH
+run:
+```sh
+$ ./install.sh
+```
 tweak your settings in Vglobals file
 
 * Some scripts store cache, so go to Vglobals, and set PATH_TO_CACHE_FOLDER
@@ -33,5 +38,6 @@ Here is short description of them:
 			$ Vvolume +					# will make a volume a bit louder
 
 	A
-		Forwards arguments to interactive shell. I use it to call aliases from AwesomeWM's Run prompt (Win+R)
+		Forwards arguments to interactive shell. I use it to call aliases from AwesomeWM's Run prompt
+		li
 
