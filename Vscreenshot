@@ -8,6 +8,14 @@ else
 	mode="$SCREENSHOTS_DEFAULT_MODE";
 fi
 
+if ! [ -d "$SCREENSHOTS_FOLDER" ]; then
+	mkdir -p "$SCREENSHOTS_FOLDER";
+	if ! [ -d "$SCREENSHOTS_FOLDER" ]; then
+		echo "no screenshots folder";
+		exit 1;
+	fi
+fi
+
 filename="$SCREENSHOTS_FOLDER/$(date +'%Y.%m.%d_%H:%M:%S').png";
 
 case "$mode" in

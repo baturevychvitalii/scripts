@@ -25,8 +25,6 @@ backup="$backupdir/Database_backup.kdbx";
 networkfile="Database_net.kdbx";
 networkdir="$HOME/Downloads";
 
-clouddir="pcloud:backup";
-
 if ! [ -e "$KEEPASS_DATABASE_FILE" ]; then
 	echo "database $KEEPASS_DATABASE_FILE doesn't exist";
 	exit 1;
@@ -56,7 +54,7 @@ echo "currently used file is backed up";
 
 
 # obtain file from network
-rclone copy "$clouddir/$networkfile" "$networkdir" && echo "loaded copy from cloud";
+rclone copy "$CLOUD_BACKUP_DIR/$networkfile" "$networkdir" && echo "loaded copy from cloud";
 
 if ! [ -e "$networkdir/$networkfile" ]; then
 	echo "network file wasn't downloaded";
@@ -78,13 +76,13 @@ else
 	
 	cp "$backup" "$networkdir/$networkfile";
 	# send network file back to online storage
-	rclone copyto "$networkdir/$networkfile" "$clouddir/$networkfile.new";
+	rclone copyto "$networkdir/$networkfile" "$CLOUD_BACKUP_DIR/$networkfile.new";
 
-	if rclone ls "$clouddir" | grep -q "$networkfile.new"; then
+	if rclone ls "$CLOUD_BACKUP_DIR" | grep -q "$networkfile.new"; then
 		echo "backup successfully copied to cloud";
-		rclone moveto "$clouddir/$networkfile.new" "$clouddir/$networkfile";
+		rclone moveto "$CLOUD_BACKUP_DIR/$networkfile.new" "$CLOUD_BACKUP_DIR/$networkfile";
 
-		if rclone ls "$clouddir" | grep -q "$networkfile.new"; then
+		if rclone ls "$CLOUD_BACKUP_DIR" | grep -q "$networkfile.new"; then
 			echo "couldn't replace old file with a new one on remote";
 			exit 1;
 		else
