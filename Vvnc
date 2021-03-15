@@ -18,7 +18,7 @@ fi
 
 echo "starting vnc server";
 
-x11vnc -display :0 -nevershared -forever -rfbauth $HOME/.vnc/passwd -o /var/log/x11vnc.log -bg;
+x11vnc -display :0 -nevershared -forever -rfbauth $HOME/.vnc/passwd -o /var/log/x11vnc.log;
 
 exit 0;
 

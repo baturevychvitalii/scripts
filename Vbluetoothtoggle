@@ -7,6 +7,20 @@ function power_status()
 
 . Vlib.sh
 
+if [ "$#" -gt 0 ] && [ "$1" = "info" ]; then
+	echo 'Host info:'
+	bluetoothctl show | grep -e Alias -e Powered -e Discovering
+
+	echo -e '\nPaired devices:'
+	for mac in $(bluetoothctl paired-devices | awk '{print $2}'); do
+		info="$(bluetoothctl info $mac)"
+		echo $info | grep -e Alias -e Connected
+		echo
+	done
+
+	exit 0
+fi
+
 if [ $(power_status) = "yes" ]; then
 	bluetoothctl power off;
 else

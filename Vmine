@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+ethminer -P stratum1+ssl://0x7c20652255eA248155575929f7E90F6C44E152e9.pobeda@eu1.ethermine.org:5555
