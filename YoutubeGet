@@ -1,5 +1,5 @@
 #!/bin/zsh
 while true; do
 	read url;
-	youtube-dl -x -f bestaudio "$url";
+	yt-dlp -x -f bestaudio "$url";
 done

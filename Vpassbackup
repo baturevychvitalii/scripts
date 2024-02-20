@@ -1,0 +1,19 @@
+#!/bin/zsh
+
+. Vglobals
+
+backupdir="$PATH_TO_CACHE_FOLDER/keepass";
+backup="$backupdir/Database_backup.kdbx";
+current="$HOME/pCloudDrive/backup/Database_net.kdbx";
+
+# move backupfile to old backup file
+mv "$backup" "$backup".old
+echo "backup backed up"
+
+# copy current file from drive to backup folder
+
+cp "$current" "$backup"
+echo -e "currently active file is backed up\n\n\
+contents of backup folder:\n"
+ls -l "$backupdir"
+

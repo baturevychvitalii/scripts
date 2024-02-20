@@ -37,7 +37,8 @@ fi
 hotspot_mac="f8:1a:67:af:1b:c3";
 optionz="--daemon --mac $hotspot_mac --hidden";
 cridentials="gringo G350nslz831rV";
-interface="wlan0";
+interface_wifi="wlan0";
+interface_with_internet="eth0";
 
 if [ interface = "NULL" ]; then
 	echo "requested interface isn't plugged in";
@@ -49,19 +50,18 @@ if ps -e | grep -q "create_ap"; then
 	exit 1;
 fi
 
-echo "Access point will be created on $interface";
+echo "Access point will be created on $interface_wifi";
 
 if [ -e /tmp/create_ap.all.lock ]; then
 	echo "deleting the lock";
 	rm /tmp/create_ap.all.lock;
 fi
 
-systemctl stop netctl-auto@wlan0
 if [ "$1" = "-n" ]; then
-	zsh -c "create_ap -n $optionz $interface $cridentials"
+	zsh -c "create_ap -n $optionz $interface_wifi $cridentials"
 else
-	zsh -c "create_ap $optionz $interface $interface $cridentials"
+	zsh -c "create_ap $optionz $interface_wifi $interface_with_internet $cridentials"
 fi
-systemctl start netctl-auto@wlan0
+
 exit 0;
 
