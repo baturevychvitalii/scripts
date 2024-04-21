@@ -1,10 +1,12 @@
 #!/bin/zsh
 
+. Vlib.sh
+
 if [ "$#" -gt "0" ] && [ "$1" = "stop" ]; then
 	if ps -e | grep -q x11vnc; then
 		x11vnc -R stop;
 	else
-		echo "there is no x11vnc instance running";
+		NOTIFY_FULL "there is no x11vnc instance running";
 		exit 1;
 	fi
 	exit 0;
@@ -12,13 +14,19 @@ fi
 
 # check if vnc is not already running
 if ps -e | grep -q x11vnc; then
-	echo "VNC is already running";
+	NOTIFY_FULL "VNC is already running";
 	exit 1;
 fi
 
-echo "starting vnc server";
+NOTIFY_FULL "starting vnc server";
 
-x11vnc -display :0 -nevershared -forever -rfbauth $HOME/.vnc/passwd -o /var/log/x11vnc.log;
+x11vnc -display :0 -nevershared -bg -forever \
+	-ping 20 \
+	-slow_fb 1111 \
+	-scale 3/4 \
+	-clip 1920x1080+0+0 \
+	-rfbauth $HOME/.vnc/passwd -o /var/log/x11vnc.log;
+	#-id 0x80000d \
 
 exit 0;
 
