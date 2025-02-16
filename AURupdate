@@ -1,5 +1,8 @@
 #!/bin/zsh
 
+# if you want to delete a package -
+# run pacman -Rns to remove the package and
+# hide or delete aur dir from $AUR_GIT_FOLDER
 . Vglobals
 
 echo "checking for updates in AUR...";

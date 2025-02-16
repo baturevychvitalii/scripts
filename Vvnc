@@ -20,6 +20,7 @@ fi
 
 NOTIFY_FULL "starting vnc server";
 
+# to show password use -showrfbauth option on a password file
 x11vnc -display :0 -nevershared -bg -forever \
 	-ping 20 \
 	-slow_fb 1111 \
